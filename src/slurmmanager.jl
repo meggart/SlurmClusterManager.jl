@@ -61,7 +61,6 @@ function launch(manager::SlurmManager, params::Dict, instances_arr::Array, c::Co
 
           line = readline(manager.srun_proc)
           m = match(r".*:(\d*)#(.*)", line)
-          @show line
           m === nothing && error("could not parse $line")
 
           config = WorkerConfig()
