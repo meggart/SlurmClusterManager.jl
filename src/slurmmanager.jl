@@ -48,10 +48,10 @@ function launch(manager::SlurmManager, params::Dict, instances_arr::Array, c::Co
         exehome = params[:dir]
         exename = params[:exename]
         exeflags = params[:exeflags]
-
         # Pass cookie as stdin to srun; srun forwards stdin to process
         # This way the cookie won't be visible in ps, top, etc on the compute node
-        srun_cmd = `srun -D $exehome $exename $exeflags --worker`
+        prog = joinpath(@__DIR__, "launchuntilsuccess.sh")
+        srun_cmd = `srun -D $exehome bash $prog $exename $exeflags --worker`
         manager.srun_proc = open(srun_cmd, write=true, read=true)
         write(manager.srun_proc, cluster_cookie())
         write(manager.srun_proc, "\n")
@@ -61,6 +61,7 @@ function launch(manager::SlurmManager, params::Dict, instances_arr::Array, c::Co
 
           line = readline(manager.srun_proc)
           m = match(r".*:(\d*)#(.*)", line)
+          @show line
           m === nothing && error("could not parse $line")
 
           config = WorkerConfig()
